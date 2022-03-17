@@ -13,14 +13,14 @@ class AddBrandToProducts extends Migration
      */
     public function up()
     {
-        Schema::table('produtos', function (Blueprint $table) {
+        Schema::table('products', function (Blueprint $table) {
             //Nesse cenário eu faço altero uma tabela que já exite sem ter que mexer nela inteira
-            //Mas caso o contrario eu teria que criar a tabela categoria antes da tabela de produto e inserir o dado que eu quero nela
-            //Abaixo um exemplo de como inserir o dado em produtos cirando a tabela categoria antes
-            //$table->integer('categoria_id')->unsigned();
-            //$table->foreign('categoria_id')->references('id')->on('categorias');
-            $table->unsignetBigInteger('categoria_id');
-            $table->foreign('categoria_id')->references('id')->on('categorias');
+            //Mas caso o contrario eu teria que criar a tabela brand antes da tabela de produto e inserir o dado que eu quero nela
+            //Abaixo um exemplo de como inserir o dado em produtos cirando a tabela brand antes
+            //$table->integer('brand_id')->unsigned();
+            //$table->foreign('brand_id')->references('id')->on('brands');
+            $table->unsignedBigInteger('brand_id');
+            $table->foreign('brand_id')->references('id')->on('brands');
         });
     }
 
@@ -32,7 +32,8 @@ class AddBrandToProducts extends Migration
     public function down()
     {
         Schema::table('products', function (Blueprint $table) {
-            //
+            $table->dropForeign(['brand_id']);
+            $table->dropColumn(['brand_id']);
         });
     }
 }
