@@ -22,8 +22,8 @@ Route::post('/categorias', 'ControladorCategoria@store');
 Route::get('/categorias/apagar/{id}', 'ControladorCategoria@destroy');
 Route::get('/categorias/editar/{id}', 'ControladorCategoria@edit');
 Route::post('/categorias/{id}', 'ControladorCategoria@update');
-Route::get('/novo', 'ClienteControlador@create');  // 1)
+Route::get('/novoclient', 'ControllerClient@create');  // 1)
 
-Route::get('/', 'ClienteControlador@index');   // 2)
+Route::get('/', 'ControllerClient@index');   // 2)
 
-Route::post('/cliente', 'ClienteControlador@store'); //2)
+Route::post('/cliente', 'ControllerClient@store'); //2)
