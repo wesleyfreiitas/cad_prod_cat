@@ -195,9 +195,12 @@
             context: this,
             data: prod,
             success: function(data) {
+                //O data da função é uma string, abaixo estou parseando para um objeto
                 prod: JSON.parse(data);
                 linhas = $('#tabelaProduto>tbody>tr');
+                // O i dentro da função equivale a indice, e = elemento
                 e = linhas.filter(function(i, e){
+                    //e.cells[0] está executanto para cada uma das linhas o zero é a coluna
                     return ( e.cells[0].textContent == prod.id );
                 });
                 if (e) {

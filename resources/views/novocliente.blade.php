@@ -42,7 +42,7 @@
             </form>
           </div>
           
-{{-- 3) --}}
+<!--{{-- 3) --}}-->
 @if ($errors->any())          
           <div class="card-footer">
     @foreach ($errors->all() as $error)
@@ -59,10 +59,10 @@
     </div>
   </main>
   
-  {{-- 3) --}}
+  <!--{{-- 3) --}}
   {{ 
     var_dump($errors) 
-  }} 
+  }} -->
 
 
 
