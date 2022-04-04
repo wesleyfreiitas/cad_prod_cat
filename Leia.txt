@@ -1,3 +1,14 @@
 Nota:
 Nesse projeto tem Cadastro, Leitura, Edição e Deleção de produtos 
 e categorias aliado o MySQL que possui um relacionamento simples no banco de dados.
+
+
+Para o uso do login multi usuário foi copiado o modelo User e substituido para o nome Admin
+Depois editado o arquivo auth que está dentro da pasta config alterando o guards
+
+a palavra web foi trocada por admin, pois ela é quem vai ser chamada e o users ficou admins
+porque será criado um provider para admins
+'web' => [
+            'driver' => 'session',
+            'provider' => 'users',
+        ],

@@ -1,15 +1,5 @@
 <?php
-
-/*
-|--------------------------------------------------------------------------
-| Web Routes
-|--------------------------------------------------------------------------
-|
-| Here is where you can register web routes for your application. These
-| routes are loaded by the RouteServiceProvider within a group which
-| contains the "web" middleware group. Now create something great!
-|
-*/
+use Illuminate\Http\Request;
 
 Route::get('/', function () {
     return view('index');
@@ -117,15 +107,15 @@ Route::get('/clientes/json', function(){
 
 ################################################
 //relacionamento um para muitos
-use App\Produto;
-use App\Categoria;
+use App\Product;
+use App\Department;
 
 Route::get('/', function () {
     return view('welcome');
 });
 
 Route::get('/categorias', function () {
-    $cats = Categoria::all();
+    $cats = Department::all();
     if (count($cats) === 0) {
         echo "<h4>Você nao possui nenhuma categoria cadastrada</h4>";
     }
@@ -137,21 +127,28 @@ Route::get('/categorias', function () {
 });
 
 Route::get('/produtos', function () {
-    $prods = Produto::all();
+    $prods = Product::all();
     if (count($prods) === 0) {
         echo "<h4>Você nao possui nenhum produto cadastrado</h4>";
     }
     else {
         echo "<table>";
-        echo "<thead><tr><td>Nome</td><td>Estoque</td><td>Preco</td><td>Categoria</td></tr></thead>";
+        echo "<thead>
+        <tr>
+        <td>Nome</td>
+        <td>Estoque</td>
+        <td>Preco</td>
+        <td>Categoria</td>
+        </tr>
+        </thead>";
         echo "<tbody>";
         foreach($prods as $p) {
             echo "<tr>";
             echo "<td>" . $p->nome . "</td>";
             echo "<td>" . $p->estoque . "</td>";
             echo "<td>" . $p->preco . "</td>";
-            // echo "<td>" . $p->categoria_id . "</td>";
-            echo "<td>" . $p->categoria->nome . "</td>";
+            //echo "<td>" . $p->department_id . "</td>";
+            echo "<td>" . $p->department->name . "</td>";
             echo "</tr>";
         }
         echo "</tbody>";
@@ -161,18 +158,18 @@ Route::get('/produtos', function () {
 
 
 Route::get('/categoriasprodutos', function () {
-    $cats = Categoria::all();
+    $cats = Department::all();
     if (count($cats) === 0) {
         echo "<h4>Você nao possui nenhuma categoria cadastrada</h4>";
     }
     else {
         foreach($cats as $c) {
-            echo "<h4>" . $c->id . ") " . $c->nome . "</h4>";
-            $prods = $c->produtos;
+            echo "<h4>" . $c->id . ") " . $c->name . "</h4>";
+            $prods = $c->product;
             if (count($prods) > 0) {
                 echo "<ul>";
                 foreach($prods as $p) {
-                    echo "<li>" . $p->nome . "</p>";
+                    echo "<li>" . $p->name . "</p>";
                 }
                 echo "</ul>";
             }
@@ -186,7 +183,7 @@ Route::get('/categoriasprodutos', function () {
 
 
 Route::get('/categoriasprodutos/json', function () {
-    $cats = Categoria::with("produtos")->get();
+    $cats = Department::with("product")->get();
     return $cats->toJson();
 });
 
@@ -233,3 +230,162 @@ Route::get('/produtosjson', function () {
     $prods = Produto::with('categoria')->get();
     return $prods;
 });
+
+########################################
+//muitos para muitos
+
+use App\Developer;
+use App\Project;
+use App\Alocation;
+
+Route::get('/desenvolvedor_projetos', function () {
+    $developers = Developer::with("project")->get();
+    foreach($developers as $d) {
+        echo "Nome do desenvolvedor: " . $d->nome . "<br>";
+        echo "Cargo: " . $d->cargo . "<br>";
+        if (count($d->projects ) > 0) {
+            echo "Projetos: <br>";
+            echo "<ul>";
+            foreach($d->projects as $p) {
+                echo "<li> Nome do projeto: " . $p->nome . " | ";
+                echo "Horas do projeto: " . $p->estimativa_horas . " | ";
+                echo "Horas trabalhadas pelo desenvolvedor: " . $p->pivot->horas_semanais . "</li>";
+            }
+            echo "</ul>";
+        }
+        echo "<hr>";
+    }
+    //$developers = Developer::all();
+    //return $developers->toJson();
+});
+
+
+Route::get('/projeto_desenvolvedores', function () {
+    $projects = Project::with("developers")->get();
+    foreach($projects as $p) {
+        echo "Nome do projeto: " . $p->nome . "<br>";
+        echo "Estimativa de horas: " . $p->estimativa_horas . "<br>";
+        if (count($p->developers ) > 0) {
+            echo "Desenvolvedores: <br>";
+            echo "<ul>";
+            foreach($p->developers as $d) {
+                echo "<li> Nome do desenvolvedor: " . $d->nome . " | ";
+                echo "Cargo: " . $d->cargo . " | ";
+                echo "Horas trabalhadas pelo desenvolvedor: " . $d->pivot->horas_semanais . "</li>";
+            }
+            echo "</ul>";
+        }
+        echo "<hr>";
+    }
+    //$projects = Project::all();
+    //return $projects->toJson();
+});
+
+
+Route::get('/alocar', function () {
+    $proj = Project::find(4);
+    if (isset($proj)) {
+        // $proj->desenvolvedores()->attach(1, ['horas_semanais' => 50]);
+        // $proj->desenvolvedores()->attach(2, ['horas_semanais' => 50]);
+        // $proj->desenvolvedores()->attach(3, ['horas_semanais' => 50]);
+        
+        // ou
+
+        $proj->desenvolvedores()->attach([
+            1 => ['horas_semanais' => 40],
+            2 => ['horas_semanais' => 50],
+            3 => ['horas_semanais' => 60],
+        ]);
+        return "OK";
+    }
+    return "Projeto nao encontrado";
+});
+
+
+Route::get('/desalocar', function () {
+    $proj = Project::find(4);
+    if (isset($proj)) {
+        $proj->desenvolvedores()->detach(1);
+        $proj->desenvolvedores()->detach(2);
+        $proj->desenvolvedores()->detach(3);
+        return "OK";
+    }
+    return "Projeto nao encontrado";
+});
+
+#####################################
+//middleware
+//é preciso declarar o middleware quando for usar ele com o nome atribuido no kernel.php
+//use \App\Http\Middleware\ProdutoAdmin;
+//Route::get('/usuarios', 'UsuarioControlador@index')->middleware('segundo');
+//acima foi chamado direto no arquivo de rotas.
+//Abaixo foi chamado no controlador
+//Route::get('/usuarios', 'UsuarioControlador@index');
+//Abaixo vai ser chamado o middleware apenas para requisições web onde eu adicionei no array web.
+Route::get('/usuarios', 'UsuarioControlador@index');
+//Passagem de parâmetro para o midd
+Route::get('/terceiro', function(){
+    return "Passou pelo terceiro";
+})->middleware('terceiro:Wesley,24');
+
+Route::get('/produtos', 'ProdutoController@index');
+
+Route::get('/negado', function () {
+    // return "Acesso negado. Somente usuarios logados podem acessar os produtos."; // 1))
+    return "Acesso negado. Somente administrador tem acesso aos produtos"; // 2))
+})->name('negado');
+
+Route::post('/login', function (Request $request) {
+    $admin = false;
+    $passwdOK = false;
+    switch( $request->user ) {
+        case 'joao':
+            $passwdOK = $request->passwd === "senhajoao";
+            $admin = true;
+            break;
+        case 'marcos':
+            $passwdOK = $request->passwd === "senhamarcos";
+            $admin = false;
+            break;
+        case 'default':
+            $passwdOK = false;
+    }
+    if ($passwdOK) {
+        $login = [ 'user' => $request->user, 'isadmin' => $admin ];
+        //retorna a session do usuário que fez o login
+        $request->session()->put('login', $login);
+        return response("Tudo OK!", 200);
+    }
+    else {
+        //se ele errou a senha os dados serão apagados com o flush
+        $request->session()->flush();
+        return response("Erro no login", 404);
+    }
+});
+
+Route::get('/logout', function (Request $request) {
+    $request->session()->flush();
+    return response("Deslogado com sucesso.", 200);
+});
+//autenticação simples
+Auth::routes();
+
+Route::get('/home', 'HomeController@index')->name('home');
+Route::get('/logar', 'LoginController@index');
+Route::get('/view', function(){
+    return view('testeview');
+});
+
+//Autenticação multiusuário
+Route::get('/admin', 'AdminController@index')->name('admin.dashboard');
+Route::get('/admin/login', 'Auth\AdminLoginController@index')->name('admin.login');
+Route::post('/admin/login', 'Auth\AdminLoginController@login')->name('admin.login.submit');
+
+
+//paginação sem usar jquery
+Route::get('/pagination', 'PaginationController@index');
+
+//paginação usando jquery
+Route::get('/pagination2', 'PaginationController@indexjs');
+Route::get('/json', 'PaginationController@indexjson');
+

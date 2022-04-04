@@ -8,6 +8,7 @@ use App\Produto;
 
 class ControladorProduto extends Controller
 {
+    
     public function indexView()
     {
         return view('produtos');
